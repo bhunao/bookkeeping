@@ -48,10 +48,6 @@ class DatabaseMixin(SQLModel):
         return self
 
 
-# class Model(DatabaseMixin, SQLModel):
-#     pass
-
-
 MODEL = DatabaseMixin
 
 
