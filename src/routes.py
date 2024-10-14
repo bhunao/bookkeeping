@@ -9,19 +9,25 @@ router = APIRouter(prefix="/api")
 DepSession: Session = Depends(get_session)
 
 
-@router.post("/")
+@router.post("/", response_model=File)
 async def create_file(file: UploadFile, s: Session = DepSession):
     new_record = File(file_name=str(file.filename), string_content="").create(s)
     return new_record
 
 
-@router.get("/all")
-async def get_all(s: Session = DepSession):
+@router.get("/{id}", response_model=File)
+async def read_file(id: int | str, s: Session = DepSession):
+    record = File.read(s, id)
+    return record
+
+
+@router.get("/all", response_model=list[File])
+async def read_all_files(s: Session = DepSession):
     record_list = File.read_all(s)
     return record_list
 
 
-@router.put("/update")
+@router.put("/update", response_model=File)
 async def update_file(new_record: FileUpdate, s: Session = DepSession):
     record = File.read(s, new_record.id).update(s, new_record)
     return record
