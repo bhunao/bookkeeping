@@ -2,8 +2,7 @@ from fastapi import APIRouter, Depends, UploadFile
 from sqlmodel import Session
 
 from src.core import get_session
-from src.models import File, DeleteMSG, FileUpdate
-
+from src.models import DeleteMSG, File, FileUpdate
 
 router = APIRouter(prefix="/api")
 
