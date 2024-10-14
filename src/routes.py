@@ -23,8 +23,8 @@ async def get_all(s: Session = DepSession):
 
 
 @router.put("/update")
-async def update_file(file_update: FileUpdate, s: Session = DepSession):
-    record = File.read(s, file_update.id).update(s, file_update)
+async def update_file(new_record: FileUpdate, s: Session = DepSession):
+    record = File.read(s, new_record.id).update(s, new_record)
     return record
 
 

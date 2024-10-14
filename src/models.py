@@ -42,7 +42,7 @@ class DatabaseMixin(SQLModel):
         session.refresh(self)
         return self
 
-    def delete(self, session: Session) -> Self | None:
+    def delete(self, session: Session) -> Self:
         session.delete(self)
         session.commit()
         return self
