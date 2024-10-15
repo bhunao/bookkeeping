@@ -2,13 +2,23 @@ from collections.abc import Generator
 from typing import Any
 from pytest import fixture
 from fastapi.testclient import TestClient
+from sqlmodel import Session, create_engine
 
 from src.main import app
 from src.models import FileUpdate
 
 
+def get_session() -> Generator[Session, None, None]:
+    with Session(engine) as session:
+        yield session
+
+
+engine = create_engine("sqlite:///test_bookkeeper.db")
+
+
 @fixture
 def client() -> Generator[TestClient, None, None]:
+    app.dependency_overrides["get_session"] = get_session
     with TestClient(app) as client:
         yield client
 
