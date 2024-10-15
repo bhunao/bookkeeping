@@ -21,7 +21,6 @@ class FileUpdate(MODEL):
 
 class File(FileBase, table=True):
     id: int | None = Field(primary_key=True, default=None)
-    pass
 
 
 # Entities
@@ -38,7 +37,6 @@ class EntityBase(MODEL):
 
 class Entity(EntityBase, table=True):
     id: int = Field(primary_key=True)
-    pass
 
 
 # Transactions
@@ -50,7 +48,6 @@ class BaseTransaction(MODEL):
 
 class Transaction(BaseTransaction, table=True):
     id: int = Field(primary_key=True)
-    pass
 
 
 # something something

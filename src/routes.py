@@ -49,7 +49,6 @@ async def create_file(file: UploadFile, s: Session = DepSession):
                 assert valor
                 assert id
                 assert desc
-                pass
             case _:
                 print("not enough", line)
 
