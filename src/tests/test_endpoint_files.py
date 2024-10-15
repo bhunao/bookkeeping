@@ -18,16 +18,14 @@ file_content = "imaginary file content"
 
 
 def upload_file(client: TestClient):
-    global file_name
-    global file_content
+    global file_name, file_content
     files = {"file": (file_name, file_content, "text/plain")}
     response = client.post("/api/", files=files)
     return response
 
 
 def test_upload_file(client: TestClient):
-    global file_name
-    global file_content
+    global file_name, file_content
     response = upload_file(client)
     response_json: dict[Any, Any] = response.json()
     assert response.status_code == 200
@@ -40,6 +38,8 @@ def test_rename_file(client: TestClient):
     uploaded_file_response = upload_file(client)
     uploaded_file: dict[Any, Any] = uploaded_file_response.json()
     novo_nome = "novo nome"
+    assert uploaded_file.get("id")
+    assert isinstance(uploaded_file["id"], int)
     file_update = FileUpdate(id=uploaded_file["id"], name=novo_nome)
     response = client.put("/api/", json=file_update.model_dump())
     response_json: dict[Any, Any] = response.json()
