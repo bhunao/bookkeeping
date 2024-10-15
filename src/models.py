@@ -10,13 +10,13 @@ DepSession: Session = Depends(get_session)
 
 # Files
 class FileBase(MODEL):
-    file_name: str
-    string_content: str
+    name: str
+    content: bytes
 
 
 class FileUpdate(MODEL):
     id: int
-    file_name: str
+    name: str
 
 
 class File(FileBase, table=True):
