@@ -50,7 +50,7 @@ def test_read_all_files(client: TestClient):
 
     response2 = client.get("/api/all")
     response_json2: list[dict[Any, Any]] = response2.json()
-    assert response2.status_code == 200
+    assert response2.status_code == 200, response2.text
     assert len(response_json2) > 0
 
 
