@@ -56,16 +56,16 @@ async def create_file(file: UploadFile, s: Session = DepSession):
     return new_record
 
 
-@router.get("/{id}", response_model=File)
-async def read_file(id: int | str, s: Session = DepSession):
-    record = File.read(s, id)
-    return record
-
-
 @router.get("/all", response_model=list[File])
 async def read_all_files(s: Session = DepSession):
     record_list = File.read_all(s)
     return record_list
+
+
+@router.get("/{id}", response_model=File)
+async def read_file(id: int | str, s: Session = DepSession):
+    record = File.read(s, id)
+    return record
 
 
 @router.put("/", response_model=File)
