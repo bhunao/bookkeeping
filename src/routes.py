@@ -8,7 +8,8 @@ from sqlmodel import Session
 from src.core import get_session
 from src.models import DeleteMSG, File, FileUpdate
 
-router = APIRouter(prefix="/api")
+router_files = APIRouter(prefix="/api/files")
+router_transactions = APIRouter(prefix="/api/transactions")
 
 DepSession: Session = Depends(get_session)
 
@@ -37,7 +38,7 @@ async def validate_csv_file(file: UploadFile) -> tuple[bytes, list[dict[str, d_t
     return byte_content, records
 
 
-@router.post("/", response_model=File)
+@router_files.post("/", response_model=File)
 async def create_file(file: UploadFile, s: Session = DepSession):
     file_content, _file_dict_record = await validate_csv_file(file)
 
@@ -57,25 +58,25 @@ async def create_file(file: UploadFile, s: Session = DepSession):
     return new_record
 
 
-@router.get("/all", response_model=list[File])
+@router_files.get("/all", response_model=list[File])
 async def read_all_files(s: Session = DepSession):
     record_list = File.read_all(s)
     return record_list
 
 
-@router.get("/{id}", response_model=File)
+@router_files.get("/{id}", response_model=File)
 async def read_file(id: int | str, s: Session = DepSession):
     record = File.read(s, id)
     return record
 
 
-@router.put("/", response_model=File)
+@router_files.put("/", response_model=File)
 async def update_file(record_update: FileUpdate, s: Session = DepSession):
     record = File.read(s, record_update.id).update(s, record_update)
     return record
 
 
-@router.delete("/{id}", response_model=DeleteMSG)
+@router_files.delete("/{id}", response_model=DeleteMSG)
 async def delete_file(id: int, s: Session = DepSession):
     record = File.read(s, id).delete(s)
     return DeleteMSG(message="File deleted.", file=record)
