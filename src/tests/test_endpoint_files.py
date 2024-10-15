@@ -44,6 +44,16 @@ def test_upload_file(client: TestClient):
     assert response_json.get("id")
 
 
+def test_read_all_files(client: TestClient):
+    response = upload_file(client)
+    assert response.status_code == 200
+
+    response2 = client.get("/api/all")
+    response_json2: list[dict[Any, Any]] = response2.json()
+    assert response2.status_code == 200
+    assert len(response_json2) > 0
+
+
 def test_read_file(client: TestClient):
     response = upload_file(client)
     response_json: dict[Any, Any] = response.json()
