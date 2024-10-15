@@ -1,12 +1,12 @@
 from io import StringIO
-from typing import Any
+
+import pandas as pd
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, status
 from pandas.errors import ParserError
 from sqlmodel import Session
 
 from src.core import get_session
 from src.models import DeleteMSG, File, FileUpdate
-import pandas as pd
 
 router = APIRouter(prefix="/api")
 
@@ -41,7 +41,7 @@ async def validate_csv_file(file: UploadFile) -> tuple[bytes, list[dict[str, d_t
 async def create_file(file: UploadFile, s: Session = DepSession):
     file_content, _file_dict_record = await validate_csv_file(file)
 
-    # parse file dict record
+    # parse file dict record ===========================
     for line in _file_dict_record:
         match line:
             case {"Data": data, "Valor": valor, "Identificador": id, "Descrição": desc}:
@@ -51,6 +51,7 @@ async def create_file(file: UploadFile, s: Session = DepSession):
                 assert desc
             case _:
                 print("not enough", line)
+    # ==================================================
 
     new_record = File(name=str(file.filename), content=file_content).create(s)
     return new_record
