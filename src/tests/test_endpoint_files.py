@@ -18,7 +18,7 @@ engine = create_engine("sqlite:///test_bookkeeper.db")
 
 @fixture
 def client() -> Generator[TestClient, None, None]:
-    app.dependency_overrides["get_session"] = get_session
+    app.dependency_overrides["get_session"] = get_session  # pyright: ignore[reportArgumentType]
     with TestClient(app) as client:
         yield client
 
@@ -44,6 +44,15 @@ def test_upload_file(client: TestClient):
     assert response_json.get("id")
 
 
+def test_read_file(client: TestClient):
+    response = upload_file(client)
+    response_json: dict[Any, Any] = response.json()
+    assert response.status_code == 200
+
+    response = client.get(f"/api/{response_json["id"]}")
+    assert response.status_code == 200
+
+
 def test_rename_file(client: TestClient):
     uploaded_file_response = upload_file(client)
     uploaded_file: dict[Any, Any] = uploaded_file_response.json()
@@ -55,3 +64,10 @@ def test_rename_file(client: TestClient):
     response_json: dict[Any, Any] = response.json()
     assert response.status_code == 200
     assert response_json.get("name") == novo_nome
+
+
+def test_delete_file(client: TestClient):
+    uploaded_response = upload_file(client)
+    uploaded_json: dict[Any, Any] = uploaded_response.json()
+    response = client.delete(f"/api/{uploaded_json["id"]}")
+    assert response.status_code == 200
