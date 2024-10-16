@@ -41,7 +41,7 @@ class Entity(EntityBase, table=True):
 
 
 # Transactions
-class BaseTransaction(MODEL):
+class TransactionBase(MODEL):
     date: date
     value: Decimal
     external_id: str | None = None
@@ -49,7 +49,15 @@ class BaseTransaction(MODEL):
     type: str
 
 
-class Transaction(BaseTransaction, table=True):
+class TransactionUpdate(MODEL):
+    date: date
+    value: Decimal
+    external_id: str | None = None
+    entity: str
+    type: str
+
+
+class Transaction(TransactionBase, table=True):
     id: int | None = Field(primary_key=True, default=None)
 
 
