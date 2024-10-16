@@ -1,5 +1,5 @@
 from decimal import Decimal
-from datetime import date
+from datetime import date as _date
 
 from fastapi import Depends
 from sqlmodel import Field, Session
@@ -42,7 +42,7 @@ class Entity(EntityBase, table=True):
 
 # Transactions
 class TransactionBase(MODEL):
-    date: date
+    date: _date
     value: Decimal
     external_id: str | None = None
     entity: str
@@ -50,11 +50,12 @@ class TransactionBase(MODEL):
 
 
 class TransactionUpdate(MODEL):
-    date: date
-    value: Decimal
+    id: int
+    date: _date | None = None
+    value: Decimal | None = None
     external_id: str | None = None
-    entity: str
-    type: str
+    entity: str | None = None
+    type: str | None = None
 
 
 class Transaction(TransactionBase, table=True):

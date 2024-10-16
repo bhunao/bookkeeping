@@ -8,7 +8,7 @@ from fastapi.testclient import TestClient
 from sqlmodel import Session, create_engine
 
 from src.main import app
-from src.models import TransactionBase, FileUpdate
+from src.models import TransactionBase, FileUpdate, TransactionUpdate
 
 
 def get_session() -> Generator[Session, None, None]:
@@ -122,8 +122,38 @@ def test_read_transaction(client: TestClient):
     response2 = client.get(f"/api/transactions/{res_json.get("id")}")
     assert response2.status_code == 200, response2.text
 
-    res_json2: dict[str, Any] = response.json()
+    res_json2: dict[str, Any] = response2.json()
     for field in TransactionBase.__fields__:
         assert res_json2.get(field) == getattr(
             new_record, field
         ), f"Error comparing field '{field}"
+
+
+def test_update_transaction(client: TestClient):
+    new_record = TransactionBase(
+        date=date.today(),
+        value=Decimal(randint(0, 350)),
+        entity="bergamais",
+        type="compra debito",
+    )
+    response = client.post("/api/transactions/", data=new_record.model_dump())
+    assert response.status_code == 200, response.text
+
+    res_json: dict[str, Any] = response.json()
+    for field in TransactionBase.__fields__:
+        assert res_json.get(field) == getattr(
+            new_record, field
+        ), f"Error comparing field '{field}"
+
+    update_record = TransactionUpdate(id=new_record["id"], value=Decimal(50))
+    response2 = client.put(
+        f"/api/transactions/{res_json.get("id")}", data=update_record.model_dump()
+    )
+    assert response2.status_code == 200, response2.text
+
+    res_json2: dict[str, Any] = response2.json()
+    for field in update_record.__fields__:
+        res_value: Any = getattr(update_record, field)
+        if not res_value:
+            continue
+        assert res_json2.get(field) == res_value, f"Error comparing field '{field}"
