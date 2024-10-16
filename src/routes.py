@@ -100,3 +100,9 @@ async def delete_file(id: int, s: Session = DepSession):
 async def create_transaction(record: TransactionBase, s: Session = DepSession):
     record = Transaction.model_validate(record).create(s)
     return record
+
+
+@router_transactions.get("/{id}")
+async def read_transaction(id: int | str, s: Session = DepSession):
+    record = Transaction.read(s, id)
+    return record
