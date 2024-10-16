@@ -137,18 +137,14 @@ def test_update_transaction(client: TestClient):
 
     res_json: dict[str, Any] = response.json()
     assert Transaction(**res_json)
-    update_record = TransactionUpdate(id=new_record["id"], value=Decimal(50))
+    update_record = TransactionUpdate(id=res_json["id"], entity="treismais")
     response2 = client.put(
-        f"/api/transactions/{res_json.get("id")}", json=update_record
+        f"/api/transactions/{res_json.get("id")}", json=update_record.model_dump()
     )
     assert response2.status_code == 200, response2.text
 
     res_json2: dict[str, Any] = response2.json()
-    for field in update_record.__fields__:
-        res_value: Any = getattr(update_record, field)
-        if not res_value:
-            continue
-        assert res_json2.get(field) == res_value, f"Error comparing field '{field}"
+    assert res_json2.get("entity") == update_record.entity, response2.text
 
 
 def test_delete_transaction(client: TestClient):
