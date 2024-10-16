@@ -1,10 +1,10 @@
-from decimal import Decimal
 from datetime import date as _date
+from decimal import Decimal
 
 from fastapi import Depends
 from sqlmodel import Field, Session
 
-from src.core import get_session, MODEL
+from src.core import MODEL, get_session
 
 DepSession: Session = Depends(get_session)
 

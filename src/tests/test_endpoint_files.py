@@ -3,12 +3,13 @@ from datetime import date
 from decimal import Decimal
 from random import randint
 from typing import Any
-from pytest import fixture
+
 from fastapi.testclient import TestClient
+from pytest import fixture
 from sqlmodel import Session, create_engine
 
 from src.main import app
-from src.models import Transaction, TransactionBase, FileUpdate, TransactionUpdate
+from src.models import FileUpdate, Transaction, TransactionUpdate
 
 
 def get_session() -> Generator[Session, None, None]:
@@ -87,63 +88,58 @@ def test_delete_file(client: TestClient):
 
 
 def test_create_transaction(client: TestClient):
-    new_record = TransactionBase(
-        date=date.today(),
-        value=Decimal(randint(0, 350)),
+    new_record = dict(
+        date=date.today().isoformat(),
+        value=randint(0, 350),
         entity="bergamais",
         type="compra debito",
     )
-    response = client.post("/api/transactions/", data=new_record.model_dump())
+    response = client.post("/api/transactions/", json=new_record)
     assert response.status_code == 200, response.text
 
     res_json: dict[str, Any] = response.json()
-    for field in TransactionBase.__fields__:
-        assert res_json.get(field) == getattr(
-            new_record, field
-        ), f"Error comparing field '{field}"
+    assert res_json.get("date") == new_record["date"]
+    assert float(res_json.get("value")) == float(new_record["value"])
+    assert res_json.get("entity") == new_record["entity"]
+    assert res_json.get("type") == new_record["type"]
 
 
 def test_read_transaction(client: TestClient):
-    new_record = TransactionBase(
-        date=date.today(),
-        value=Decimal(randint(0, 350)),
+    new_record = dict(
+        date=date.today().isoformat(),
+        value=randint(0, 350),
         entity="bergamais",
         type="compra debito",
     )
-    response = client.post("/api/transactions/", data=new_record.model_dump())
+    response = client.post("/api/transactions/", json=new_record)
     assert response.status_code == 200, response.text
 
     res_json: dict[str, Any] = response.json()
-    for field in TransactionBase.__fields__:
-        assert res_json.get(field) == getattr(
-            new_record, field
-        ), f"Error comparing field '{field}"
-
     response2 = client.get(f"/api/transactions/{res_json.get("id")}")
     assert response2.status_code == 200, response2.text
 
     res_json2: dict[str, Any] = response2.json()
-    for field in TransactionBase.__fields__:
-        assert res_json2.get(field) == getattr(
-            new_record, field
-        ), f"Error comparing field '{field}"
+    assert res_json2.get("date") == new_record["date"]
+    assert float(res_json2.get("value")) == float(new_record["value"])
+    assert res_json2.get("entity") == new_record["entity"]
+    assert res_json2.get("type") == new_record["type"]
 
 
 def test_update_transaction(client: TestClient):
-    new_record = TransactionBase(
-        date=date.today(),
-        value=Decimal(randint(0, 350)),
+    new_record = dict(
+        date=date.today().isoformat(),
+        value=randint(0, 350),
         entity="bergamais",
         type="compra debito",
     )
-    response = client.post("/api/transactions/", data=new_record.model_dump())
+    response = client.post("/api/transactions/", json=new_record)
     assert response.status_code == 200, response.text
 
     res_json: dict[str, Any] = response.json()
     assert Transaction(**res_json)
     update_record = TransactionUpdate(id=new_record["id"], value=Decimal(50))
     response2 = client.put(
-        f"/api/transactions/{res_json.get("id")}", data=update_record.model_dump()
+        f"/api/transactions/{res_json.get("id")}", json=update_record
     )
     assert response2.status_code == 200, response2.text
 
@@ -156,13 +152,13 @@ def test_update_transaction(client: TestClient):
 
 
 def test_delete_transaction(client: TestClient):
-    new_record = TransactionBase(
-        date=date.today(),
+    new_record = dict(
+        date=date.today().isoformat(),
         value=Decimal(randint(0, 350)),
         entity="bergamais",
         type="compra debito",
     )
-    response = client.post("/api/transactions/", data=new_record.model_dump())
+    response = client.post("/api/transactions/", json=new_record)
     assert response.status_code == 200, response.text
     assert Transaction(**response.json())
 
