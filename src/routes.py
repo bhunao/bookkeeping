@@ -1,4 +1,6 @@
+from datetime import datetime
 from io import StringIO
+from typing import Any
 
 import pandas as pd
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, status
@@ -6,7 +8,7 @@ from pandas.errors import ParserError
 from sqlmodel import Session
 
 from src.core import get_session
-from src.models import DeleteMSG, File, FileUpdate
+from src.models import DeleteMSG, File, FileUpdate, Transaction
 
 router_files = APIRouter(prefix="/api/files")
 router_transactions = APIRouter(prefix="/api/transactions")
@@ -50,6 +52,19 @@ async def create_file(file: UploadFile, s: Session = DepSession):
                 assert valor
                 assert id
                 assert desc
+
+                desc: str
+                type, _, entity = desc.partition("-")
+                date = datetime.strptime(data, "%d/%m/%Y").date()
+
+                transaction = Transaction(
+                    date=date,
+                    value=valor,
+                    external_id=id,
+                    entity=entity.strip(),
+                    type=type.strip(),
+                ).create(s)
+
             case _:
                 print("not enough", line)
     # ==================================================

@@ -1,4 +1,5 @@
 from decimal import Decimal
+from datetime import date
 
 from fastapi import Depends
 from sqlmodel import Field, Session
@@ -41,13 +42,15 @@ class Entity(EntityBase, table=True):
 
 # Transactions
 class BaseTransaction(MODEL):
-    entity: str
+    date: date
     value: Decimal
     external_id: str | None = None
+    entity: str
+    type: str
 
 
 class Transaction(BaseTransaction, table=True):
-    id: int = Field(primary_key=True)
+    id: int | None = Field(primary_key=True, default=None)
 
 
 # something something
