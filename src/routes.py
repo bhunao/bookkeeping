@@ -1,6 +1,5 @@
 from datetime import datetime
 from io import StringIO
-from typing import Any
 
 import pandas as pd
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, status
