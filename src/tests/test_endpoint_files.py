@@ -100,4 +100,30 @@ def test_create_transaction(client: TestClient):
     for field in BaseTransaction.__fields__:
         assert res_json.get(field) == getattr(
             new_record, field
-        ), f"Error comparing field '{field}'"
+        ), f"Error comparing field '{field}"
+
+
+def test_read_transaction(client: TestClient):
+    new_record = BaseTransaction(
+        date=date.today(),
+        value=Decimal(randint(0, 350)),
+        entity="bergamais",
+        type="compra debito",
+    )
+    response = client.post("/api/transactions/", data=new_record.model_dump())
+    assert response.status_code == 200, response.text
+
+    res_json: dict[str, Any] = response.json()
+    for field in BaseTransaction.__fields__:
+        assert res_json.get(field) == getattr(
+            new_record, field
+        ), f"Error comparing field '{field}"
+
+    response2 = client.get(f"/api/transactions/{res_json.get("id")}")
+    assert response2.status_code == 200, response2.text
+
+    res_json2: dict[str, Any] = response.json()
+    for field in BaseTransaction.__fields__:
+        assert res_json2.get(field) == getattr(
+            new_record, field
+        ), f"Error comparing field '{field}"
