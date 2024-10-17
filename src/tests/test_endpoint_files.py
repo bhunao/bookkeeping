@@ -48,7 +48,7 @@ def test_upload_file(client: TestClient):
     global file_name, file_content
     response = upload_file(client)
     response_json: dict[Any, Any] = response.json()
-    assert response.status_code == 200, response.text
+    assert response.status_code == status.HTTP_201_CREATED, response.text
     assert response_json.get("name") == file_name
     assert response_json.get("content") == file_content
     assert response_json.get("id")
@@ -69,18 +69,18 @@ def test_upload_same_file_twice(client: TestClient):
 
 def test_read_all_files(client: TestClient):
     response = upload_file(client)
-    assert response.status_code == 200, response.text
+    assert response.status_code == status.HTTP_201_CREATED, response.text
 
     response2 = client.get("/api/files/all")
     response_json2: list[dict[Any, Any]] = response2.json()
-    assert response2.status_code == 200, response2.text
+    assert response2.status_code == status.HTTP_200_OK, response2.text
     assert len(response_json2) > 0
 
 
 def test_read_file(client: TestClient):
     response = upload_file(client)
     response_json: dict[Any, Any] = response.json()
-    assert response.status_code == status.HTTP_200_OK, response.text
+    assert response.status_code == status.HTTP_201_CREATED, response.text
 
     response = client.get(f"/api/files/{response_json["id"]}")
     assert response.status_code == 200, response.text
@@ -95,7 +95,7 @@ def test_rename_file(client: TestClient):
     file_update = FileUpdate(id=uploaded_file["id"], name=novo_nome)
     response = client.put("/api/files/", json=file_update.model_dump())
     response_json: dict[Any, Any] = response.json()
-    assert response.status_code == 200, response.text
+    assert response.status_code == status.HTTP_200_OK, response.text
     assert response_json.get("name") == novo_nome
 
 
@@ -114,7 +114,7 @@ def test_create_transaction(client: TestClient):
         type="compra debito",
     )
     response = client.post("/api/transactions/", json=new_record)
-    assert response.status_code == 200, response.text
+    assert response.status_code == status.HTTP_201_CREATED, response.text
 
     res_json: dict[str, Any] = response.json()
     assert res_json.get("date") == new_record["date"]
@@ -131,7 +131,7 @@ def test_read_transaction(client: TestClient):
         type="compra debito",
     )
     response = client.post("/api/transactions/", json=new_record)
-    assert response.status_code == 200, response.text
+    assert response.status_code == status.HTTP_201_CREATED, response.text
 
     res_json: dict[str, Any] = response.json()
     response2 = client.get(f"/api/transactions/{res_json.get("id")}")
@@ -157,7 +157,7 @@ def test_update_transaction(client: TestClient):
         type="compra debito",
     )
     response = client.post("/api/transactions/", json=new_record)
-    assert response.status_code == 200, response.text
+    assert response.status_code == status.HTTP_201_CREATED, response.text
 
     res_json: dict[str, Any] = response.json()
     assert Transaction(**res_json)
@@ -177,7 +177,7 @@ def test_delete_transaction(client: TestClient):
         type="compra debito",
     )
     response = client.post("/api/transactions/", json=new_record)
-    assert response.status_code == 200, response.text
+    assert response.status_code == status.HTTP_201_CREATED, response.text
     assert Transaction(**response.json())
 
     res_json: dict[str, Any] = response.json()

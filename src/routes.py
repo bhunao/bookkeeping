@@ -46,7 +46,7 @@ async def validate_csv_file(file: UploadFile) -> tuple[bytes, list[dict[str, d_t
     return byte_content, records
 
 
-@router_files.post("/", response_model=File)
+@router_files.post("/", response_model=File, status_code=status.HTTP_201_CREATED)
 async def create_file(file: UploadFile, s: Session = DepSession):
     file_content, _file_dict_record = await validate_csv_file(file)
 
@@ -109,7 +109,7 @@ async def read_all_transactions(s: Session = DepSession):
     return record
 
 
-@router_transactions.post("/")
+@router_transactions.post("/", status_code=status.HTTP_201_CREATED)
 async def create_transaction(record: TransactionBase, s: Session = DepSession):
     record = Transaction.model_validate(record).create(s)
     return record
