@@ -46,9 +46,9 @@ async def create_file(file: UploadFile, s: Session = DepSession):
     # parse file dict record ===========================
     for line in _file_dict_record:
         match line:
-            case {"Data": data, "Valor": valor, "Identificador": id, "Descrição": desc}:
+            case {"Data": data, "Valor": value, "Identificador": id, "Descrição": desc}:
                 assert data
-                assert valor
+                assert value
                 assert id
                 assert desc
 
@@ -56,9 +56,9 @@ async def create_file(file: UploadFile, s: Session = DepSession):
                 type, _, entity = desc.partition("-")
                 date = datetime.strptime(data, "%d/%m/%Y").date()
 
-                transaction = Transaction(
+                _ = Transaction(
                     date=date,
-                    value=valor,
+                    value=value,
                     external_id=id,
                     entity=entity.strip(),
                     type=type.strip(),
