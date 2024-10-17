@@ -139,7 +139,7 @@ def test_update_transaction(client: TestClient):
     assert Transaction(**res_json)
     update_record = TransactionUpdate(id=res_json["id"], entity="treismais")
     response2 = client.put(
-        f"/api/transactions/{res_json.get("id")}", json=update_record.model_dump()
+        "/api/transactions/", json=update_record.model_dump()
     )
     assert response2.status_code == 200, response2.text
 

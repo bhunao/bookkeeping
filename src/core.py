@@ -50,6 +50,8 @@ class DatabaseMixin(SQLModel):
         fields_to_update = schema.__fields__.keys() & self.__fields__.keys()
         for field in fields_to_update:
             value: str = getattr(schema, field)
+            if not value:
+                continue
             setattr(self, field, value)
         session.commit()
         session.refresh(self)

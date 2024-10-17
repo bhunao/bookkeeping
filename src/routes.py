@@ -7,7 +7,7 @@ from pandas.errors import ParserError
 from sqlmodel import Session
 
 from src.core import get_session
-from src.models import DeleteMSG, File, FileUpdate, Transaction, TransactionBase
+from src.models import DeleteMSG, File, FileUpdate, Transaction, TransactionBase, TransactionUpdate
 
 router_files = APIRouter(prefix="/api/files")
 router_transactions = APIRouter(prefix="/api/transactions")
@@ -106,3 +106,8 @@ async def create_transaction(record: TransactionBase, s: Session = DepSession):
 async def read_transaction(id: int | str, s: Session = DepSession):
     record = Transaction.read(s, id)
     return record
+
+@router_transactions.put("/")
+async def update_transaction(record: TransactionUpdate, s: Session = DepSession):
+    updated_record = Transaction.read(s, record.id).update(s, record)
+    return updated_record
