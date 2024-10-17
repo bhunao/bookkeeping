@@ -42,7 +42,7 @@ async def validate_csv_file(file: UploadFile) -> tuple[bytes, list[dict[str, d_t
             status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail="Invalid CSV file, could not process the content.",
         )
-    records = csv.to_dict("records")
+    records: list[dict[str, d_types]] = csv.to_dict("records")
     return byte_content, records
 
 
