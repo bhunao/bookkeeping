@@ -150,7 +150,7 @@ def test_update_transaction(client: TestClient):
 def test_delete_transaction(client: TestClient):
     new_record = dict(
         date=date.today().isoformat(),
-        value=Decimal(randint(0, 350)),
+        value=randint(0, 350),
         entity="bergamais",
         type="compra debito",
     )
@@ -158,5 +158,6 @@ def test_delete_transaction(client: TestClient):
     assert response.status_code == 200, response.text
     assert Transaction(**response.json())
 
+    res_json: dict[str, Any] = response.json()
     response2 = client.delete(f"/api/transactions/{res_json.get("id")}")
     assert response2.status_code == 200, response2.text

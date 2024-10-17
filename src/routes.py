@@ -111,3 +111,9 @@ async def read_transaction(id: int | str, s: Session = DepSession):
 async def update_transaction(record: TransactionUpdate, s: Session = DepSession):
     updated_record = Transaction.read(s, record.id).update(s, record)
     return updated_record
+
+
+@router_transactions.delete("/{id}")
+async def delete_transaction(id: int, s: Session= DepSession):
+    record = Transaction.read(s, id).delete(s)
+    return record
