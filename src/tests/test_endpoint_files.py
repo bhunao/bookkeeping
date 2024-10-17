@@ -1,6 +1,5 @@
 from collections.abc import Generator
 from datetime import date
-from decimal import Decimal
 from random import randint
 from typing import Any
 
@@ -21,7 +20,7 @@ def mock_get_session() -> Generator[Session, None, None]:
 engine = create_engine(
     "sqlite:///test_bookkeeper.db",
     echo=False,
-    connect_args={"check_same_thread": False}
+    connect_args={"check_same_thread": False},
 )
 MODEL.metadata.create_all(engine)
 
@@ -31,7 +30,6 @@ def client() -> Generator[TestClient, None, None]:
     app.dependency_overrides[get_session] = mock_get_session
     with TestClient(app) as client:
         yield client
-
 
 
 file_name = "test_imaginary_file.csv"
@@ -131,6 +129,7 @@ def test_read_transaction(client: TestClient):
     assert res_json2.get("entity") == new_record["entity"]
     assert res_json2.get("type") == new_record["type"]
 
+
 def test_read_all_transactions(client: TestClient):
     response = client.get("/api/transactions/all")
     assert response.status_code == 200, response.text
@@ -149,9 +148,7 @@ def test_update_transaction(client: TestClient):
     res_json: dict[str, Any] = response.json()
     assert Transaction(**res_json)
     update_record = TransactionUpdate(id=res_json["id"], entity="treismais")
-    response2 = client.put(
-        "/api/transactions/", json=update_record.model_dump()
-    )
+    response2 = client.put("/api/transactions/", json=update_record.model_dump())
     assert response2.status_code == 200, response2.text
 
     res_json2: dict[str, Any] = response2.json()
