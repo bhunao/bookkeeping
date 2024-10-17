@@ -8,23 +8,30 @@ from fastapi.testclient import TestClient
 from pytest import fixture
 from sqlmodel import Session, create_engine
 
+from src.core import MODEL, get_session
 from src.main import app
 from src.models import FileUpdate, Transaction, TransactionUpdate
 
 
-def get_session() -> Generator[Session, None, None]:
+def mock_get_session() -> Generator[Session, None, None]:
     with Session(engine) as session:
         yield session
 
 
-engine = create_engine("sqlite:///test_bookkeeper.db")
+engine = create_engine(
+    "sqlite:///test_bookkeeper.db",
+    echo=False,
+    connect_args={"check_same_thread": False}
+)
+MODEL.metadata.create_all(engine)
 
 
 @fixture
 def client() -> Generator[TestClient, None, None]:
-    app.dependency_overrides["get_session"] = get_session  # pyright: ignore[reportArgumentType]
+    app.dependency_overrides[get_session] = mock_get_session
     with TestClient(app) as client:
         yield client
+
 
 
 file_name = "test_imaginary_file.csv"
