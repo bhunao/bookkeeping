@@ -3,8 +3,9 @@ from datetime import date
 from random import randint
 from typing import Any
 
+from fastapi import status
 from fastapi.testclient import TestClient
-from pytest import fixture
+from pytest import fixture, mark
 from sqlmodel import Session, create_engine
 
 from src.core import MODEL, get_session
@@ -53,6 +54,19 @@ def test_upload_file(client: TestClient):
     assert response_json.get("id")
 
 
+@mark.skip
+def test_upload_same_file_twice(client: TestClient):
+    file_name = "test_imaginary_file.csv"
+    file_content = "imaginary file content"
+    file = {"file": (file_name, file_content, "text/plain")}
+    response = client.post("/api/files/", files=file)
+
+    assert response.status_code == status.HTTP_201_CREATED, response.text
+
+    response2 = client.post("/api/files/", files=file)
+    assert response2.status_code == status.HTTP_201_CREATED, response.text
+
+
 def test_read_all_files(client: TestClient):
     response = upload_file(client)
     assert response.status_code == 200, response.text
@@ -66,7 +80,7 @@ def test_read_all_files(client: TestClient):
 def test_read_file(client: TestClient):
     response = upload_file(client)
     response_json: dict[Any, Any] = response.json()
-    assert response.status_code == 200, response.text
+    assert response.status_code == status.HTTP_200_OK, response.text
 
     response = client.get(f"/api/files/{response_json["id"]}")
     assert response.status_code == 200, response.text
