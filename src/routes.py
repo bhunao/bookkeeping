@@ -96,6 +96,11 @@ async def delete_file(id: int, s: Session = DepSession):
     return DeleteMSG(message="File deleted.", file=record)
 
 
+@router_transactions.get("/all")
+async def read_all_transactions(s: Session = DepSession):
+    record = Transaction.read_all(s)
+    return record
+
 @router_transactions.post("/")
 async def create_transaction(record: TransactionBase, s: Session = DepSession):
     record = Transaction.model_validate(record).create(s)

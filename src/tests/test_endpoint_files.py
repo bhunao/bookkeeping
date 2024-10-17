@@ -125,13 +125,7 @@ def test_read_transaction(client: TestClient):
     assert res_json2.get("type") == new_record["type"]
 
 def test_read_all_transactions(client: TestClient):
-    new_record = dict(
-        date=date.today().isoformat(),
-        value=randint(0, 350),
-        entity="bergamais",
-        type="compra debito",
-    )
-    response = client.post("/api/transactions/all", json=new_record)
+    response = client.get("/api/transactions/all")
     assert response.status_code == 200, response.text
 
 
