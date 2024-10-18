@@ -64,7 +64,7 @@ def test_upload_same_file_twice(client: TestClient):
     assert response.status_code == status.HTTP_201_CREATED, response.text
 
     response2 = client.post("/api/files/", files=file)
-    assert response2.status_code == status.HTTP_201_CREATED, response.text
+    assert response2.status_code == status.HTTP_409_CONFLICT, response.text
 
 
 def test_read_all_files(client: TestClient):
