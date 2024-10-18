@@ -54,7 +54,6 @@ def test_upload_file(client: TestClient):
     assert response_json.get("id")
 
 
-@mark.skip
 def test_upload_same_file_twice(client: TestClient):
     file_name = "test_imaginary_file.csv"
     file_content = "imaginary file content"
@@ -103,7 +102,7 @@ def test_delete_file(client: TestClient):
     uploaded_response = upload_file(client)
     uploaded_json: dict[Any, Any] = uploaded_response.json()
     response = client.delete(f"/api/files/{uploaded_json["id"]}")
-    assert response.status_code == 200, response.text
+    assert response.status_code == status.HTTP_204_NO_CONTENT, response.text
 
 
 def test_create_transaction(client: TestClient):
@@ -182,4 +181,4 @@ def test_delete_transaction(client: TestClient):
 
     res_json: dict[str, Any] = response.json()
     response2 = client.delete(f"/api/transactions/{res_json.get("id")}")
-    assert response2.status_code == 200, response2.text
+    assert response2.status_code == status.HTTP_204_NO_CONTENT, response2.text

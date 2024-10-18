@@ -2,9 +2,9 @@ from datetime import datetime
 from io import StringIO
 
 import pandas as pd
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, status
+from fastapi import APIRouter, Depends, HTTPException, Response, UploadFile, status
 from pandas.errors import ParserError
-from sqlmodel import Session
+from sqlmodel import Session, select
 
 from src.core import get_session
 from src.models import (
@@ -63,6 +63,8 @@ async def create_file(file: UploadFile, s: Session = DepSession):
                 type, _, entity = desc.partition("-")
                 date = datetime.strptime(data, "%d/%m/%Y").date()
 
+                # query = select(Transaction).where(Transaction.)
+
                 _ = Transaction(
                     date=date,
                     value=value,
@@ -74,6 +76,11 @@ async def create_file(file: UploadFile, s: Session = DepSession):
             case _:
                 print("not enough", line)
     # ==================================================
+
+    query = select(File).where(File.content == file_content)
+    exists = s.exec(query).all()
+    if not exists:
+        pass
 
     new_record = File(name=str(file.filename), content=file_content).create(s)
     return new_record
@@ -97,10 +104,10 @@ async def update_file(record_update: FileUpdate, s: Session = DepSession):
     return record
 
 
-@router_files.delete("/{id}", response_model=DeleteMSG)
+@router_files.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_file(id: int, s: Session = DepSession):
-    record = File.read(s, id).delete(s)
-    return DeleteMSG(message="File deleted.", file=record)
+    _record = File.read(s, id).delete(s)
+    return
 
 
 @router_transactions.get("/all")
@@ -127,7 +134,7 @@ async def update_transaction(record: TransactionUpdate, s: Session = DepSession)
     return updated_record
 
 
-@router_transactions.delete("/{id}")
+@router_transactions.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_transaction(id: int, s: Session = DepSession):
-    record = Transaction.read(s, id).delete(s)
-    return record
+    _record = Transaction.read(s, id).delete(s)
+    return
