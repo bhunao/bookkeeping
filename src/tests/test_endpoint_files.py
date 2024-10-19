@@ -5,17 +5,22 @@ from typing import Any
 
 from fastapi import status
 from fastapi.testclient import TestClient
-from pytest import fixture, mark
-from sqlmodel import Session, create_engine
+from pytest import fixture
+from sqlmodel import Session, create_engine, delete
 
 from src.core import MODEL, get_session
 from src.main import app
-from src.models import FileUpdate, Transaction, TransactionUpdate
+from src.models import File, FileUpdate, Transaction, TransactionUpdate
 
 
 def mock_get_session() -> Generator[Session, None, None]:
+    MODEL.metadata.create_all(engine)
     with Session(engine) as session:
         yield session
+
+        session.exec(delete(File))
+        session.exec(delete(Transaction))
+        session.commit()
 
 
 engine = create_engine(
@@ -23,7 +28,6 @@ engine = create_engine(
     echo=False,
     connect_args={"check_same_thread": False},
 )
-MODEL.metadata.create_all(engine)
 
 
 @fixture
@@ -33,20 +37,24 @@ def client() -> Generator[TestClient, None, None]:
         yield client
 
 
-file_name = "test_imaginary_file.csv"
-file_content = "imaginary file content"
+# file_name = "test_imaginary_file.csv"
+# file_content = "imaginary file content"
 
 
-def upload_file(client: TestClient):
-    global file_name, file_content
-    files = {"file": (file_name, file_content, "text/plain")}
-    response = client.post("/api/files/", files=files)
-    return response
+# def upload_file(client: TestClient):
+#     file_name = "test_imaginary_file.csv"
+#     file_content = "imaginary file content"
+#     files = {"file": (file_name, file_content, "text/plain")}
+#     response = client.post("/api/files/", files=files)
+#     return response
 
 
 def test_upload_file(client: TestClient):
-    global file_name, file_content
-    response = upload_file(client)
+    file_name = "test_imaginary_file.csv"
+    file_content = "imaginary file content test_upload_file"
+    files = {"file": (file_name, file_content, "text/plain")}
+    response = client.post("/api/files/", files=files)
+
     response_json: dict[Any, Any] = response.json()
     assert response.status_code == status.HTTP_201_CREATED, response.text
     assert response_json.get("name") == file_name
@@ -56,7 +64,7 @@ def test_upload_file(client: TestClient):
 
 def test_upload_same_file_twice(client: TestClient):
     file_name = "test_imaginary_file.csv"
-    file_content = "imaginary file content"
+    file_content = "imaginary file content test_upload_same_file_twice"
     file = {"file": (file_name, file_content, "text/plain")}
     response = client.post("/api/files/", files=file)
 
@@ -67,7 +75,10 @@ def test_upload_same_file_twice(client: TestClient):
 
 
 def test_read_all_files(client: TestClient):
-    response = upload_file(client)
+    file_name = "test_imaginary_file.csv"
+    file_content = "imaginary file content test_read_all_files"
+    files = {"file": (file_name, file_content, "text/plain")}
+    response = client.post("/api/files/", files=files)
     assert response.status_code == status.HTTP_201_CREATED, response.text
 
     response2 = client.get("/api/files/all")
@@ -77,7 +88,10 @@ def test_read_all_files(client: TestClient):
 
 
 def test_read_file(client: TestClient):
-    response = upload_file(client)
+    file_name = "test_imaginary_file.csv"
+    file_content = "imaginary file content test_read_file"
+    files = {"file": (file_name, file_content, "text/plain")}
+    response = client.post("/api/files/", files=files)
     response_json: dict[Any, Any] = response.json()
     assert response.status_code == status.HTTP_201_CREATED, response.text
 
@@ -86,11 +100,16 @@ def test_read_file(client: TestClient):
 
 
 def test_rename_file(client: TestClient):
-    uploaded_file_response = upload_file(client)
+    file_name = "test_imaginary_file.csv"
+    file_content = "imaginary file content test_rename_file"
+    files = {"file": (file_name, file_content, "text/plain")}
+    uploaded_file_response = client.post("/api/files/", files=files)
     uploaded_file: dict[Any, Any] = uploaded_file_response.json()
     novo_nome = "novo nome"
+
     assert uploaded_file.get("id")
     assert isinstance(uploaded_file["id"], int)
+
     file_update = FileUpdate(id=uploaded_file["id"], name=novo_nome)
     response = client.put("/api/files/", json=file_update.model_dump())
     response_json: dict[Any, Any] = response.json()
@@ -99,7 +118,10 @@ def test_rename_file(client: TestClient):
 
 
 def test_delete_file(client: TestClient):
-    uploaded_response = upload_file(client)
+    file_name = "test_imaginary_file.csv"
+    file_content = "imaginary file content test_delete_file"
+    files = {"file": (file_name, file_content, "text/plain")}
+    uploaded_response = client.post("/api/files/", files=files)
     uploaded_json: dict[Any, Any] = uploaded_response.json()
     response = client.delete(f"/api/files/{uploaded_json["id"]}")
     assert response.status_code == status.HTTP_204_NO_CONTENT, response.text

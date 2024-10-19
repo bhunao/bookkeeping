@@ -79,8 +79,11 @@ async def create_file(file: UploadFile, s: Session = DepSession):
 
     query = select(File).where(File.content == file_content)
     exists = s.exec(query).all()
-    if not exists:
-        pass
+    if exists:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=f"File already exists with name {file.filename}.",
+        )
 
     new_record = File(name=str(file.filename), content=file_content).create(s)
     return new_record
