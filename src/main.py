@@ -1,11 +1,20 @@
+from contextlib import asynccontextmanager
 import datetime
 from decimal import Decimal
-from fastapi import APIRouter, Depends, FastAPI
-from pydantic import validator
+from pprint import pprint
+from fastapi import APIRouter, Depends, FastAPI, HTTPException, status
 from sqlmodel import Field, SQLModel, Session, create_engine
+from sqlalchemy.exc import StatementError
 
 
-app = FastAPI(title="Bookkeeper")
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    assert app
+    SQLModel.metadata.create_all(engine)
+    yield
+
+
+app = FastAPI(title="Bookkeeper", lifespan=lifespan)
 
 router = APIRouter(prefix="/transactions")
 
@@ -24,10 +33,6 @@ def get_session():
         yield session
 
 
-def lifespan():
-    SQLModel.metadata.create_all(engine)
-
-
 class Transaction(SQLModel, table=True):
     id: int | None = Field(primary_key=True, default=None)
     date: datetime.date
@@ -35,17 +40,6 @@ class Transaction(SQLModel, table=True):
     external_id: str | None = None
     entity: str
     type: str
-
-    @validator("date", pre=True)
-    def parse_date(cls, value):
-        if isinstance(value, date):
-            return value
-        if isinstance(value, str):
-            try:
-                return datetime.strptime(value, "%Y-%m-%d").date()
-            except ValueError:
-                raise ValueError("Invalid date format. Use YYYY-MM-DD")
-        raise ValueError("Invalid date type")
 
 
 DependsSession: Session = Depends(get_session)
@@ -60,7 +54,7 @@ class TransactionCRUD:
 
         s.add_all(recordlist)
         s.commit()
-        s.refresh(recordlist)
+        [s.refresh(rec) for rec in recordlist]
         return recordlist
 
 
@@ -71,7 +65,17 @@ DependsTransCrud: TransactionCRUD = Depends(TransactionCRUD)
 async def create_transaction(
     recordlist: list[Transaction], crud: TransactionCRUD = DependsTransCrud
 ):
-    db_recordlist = crud.create(recordlist)
+    for i in recordlist:
+        i.date = datetime.datetime.strptime(i.date, "%Y-%m-%d")
+        pprint((i.date, type(i.date)))
+
+    try:
+        db_recordlist = crud.create(recordlist)
+    except StatementError as error:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"db error {error=}",
+        )
     return db_recordlist
 
 
